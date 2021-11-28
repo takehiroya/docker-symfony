@@ -1,9 +1,10 @@
 # volumes
 /logs
-/symfony
+/symfony/var/
+/symfony/vendor/
 /db
 
-/.env.*
+/.env
 
 # IDE setting
 ## PhpStorm
