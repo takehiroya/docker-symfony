@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Person;
+use App\Form\PersonType;
+use Symfony\Componet\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,90 +21,116 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class HelloController extends AbstractController
 {
     /**
+     * @Route("/create", name="create")
+     */
+    public function create(Request $request)
+    {
+        $person = new Person();
+        $form = $this->createForm(PersonType::class, $person);
+        $form->handleRequest($request);
+
+        if($request->getMethod() == 'POST'){
+            $person = $form->getData();
+            $manager = $this->getDoctrine()->getManager();
+            $manager->persist($person);
+            $manager->flush();
+            return $this->redirect('/hello');
+        }else{
+            return $this->render('hello/create.html.twig', [
+                'title' => 'Hello',
+                'message' => 'Create Entity',
+                'form' => $form->createView(),
+            ]);
+        }
+    }
+
+    /**
+     * @Route("/update/{id}", name="update")
+     */
+    public function update(Request $request, Person $person)
+    {
+        $form = $this->createFormBuilder($person)
+            ->add('name', TextType::class)
+            ->add('email', TextType::class)
+            ->add('age', IntegerType::class)
+            ->add('save', SubmitType::class, array('label' => 'Click'))
+            ->getForm();
+        if($request->getMethod() == 'POST'){
+            $form->handleRequest($request);
+            $person = $form->getData();
+            $manager = $this->getDoctrine()->getManager();
+            $manager->flush();
+            return $this->redirect('/hello');
+        }else{
+            return $this->render('hello/create.html.twig', [
+                'title' => 'Hello',
+                'message' => 'update Entity id='. $person->getId(),
+                'form' => $form->createView(),
+            ]);
+        }
+    }
+
+    /**
+     * @Route("/delete/{id}", name="delete")
+     */
+    public function delete(Request $request, Person $person)
+    {
+        $form = $this->createFormBuilder($person)
+            ->add('name', TextType::class)
+            ->add('email', TextType::class)
+            ->add('age', IntegerType::class)
+            ->add('save', SubmitType::class, array('label' => 'Click'))
+            ->getForm();
+        if($request->getMethod() == 'POST'){
+            $form->handleRequest($request);
+            $person = $form->getData();
+            $manager = $this->getDoctrine()->getManager();
+            $manager->remove($person);
+            $manager->flush();
+            return $this->redirect('/hello');
+        }else{
+            return $this->render('hello/create.html.twig', [
+                'title' => 'Hello',
+                'message' => 'update Entity id='. $person->getId(),
+                'form' => $form->createView(),
+            ]);
+        }
+    }
+
+    /**
      * @Route("/hello", name="hello")
      */
     public function index(Request $request, LoggerInterface $logger)
     {
-        $person = new Person();
-        $person->setName('Taro')
-            ->setAge(36)
-            ->setEmail('taro@gmail.com');
-
-        $form = $this->createFormBuilder($person)
-            ->add('name', TextType::class)
-            ->add('age', IntegerType::class)
-            ->add('email', EmailType::class)
-            ->add('save', SubmitType::class, ['label' => 'Click'])
-            ->getForm();
-
-        if($request->getMethod() == 'POST'){
-            $form->handleRequest($request);
-            $obj = $form->getData();
-            $msg = 'Name:'. $obj->getName(). '<br>'
-                . 'Age:'. $obj->getAge(). '<br>'
-                . 'Email:'. $obj->getEmail();
-        }else{
-            $msg = 'お名前どうぞ';
-        }
+        $repository = $this->getDoctrine()
+            ->getRepository(Person::class);
+            $data = $repository->findall();
         return $this->render('hello/index.html.twig', [
             'title' => 'Hello',
-            'message' => $msg,
-            'form' => $form->createView()
+            'data' => $data,
+        ]);
+    }
+    /**
+     * @Route("/find/{id}", name="find")
+     */
+    public function find(Request $request, Person $person)
+    {
+        return $this->render('hello/find.html.twig', [
+            'title' => 'Hello',
+            'data' => $person,
         ]);
     }
 }
 
-//データクラス
-class Person
+class findForm
 {
-    protected $name;
-    protected $age;
-    protected $email;
-    protected $data = "";
-
-    public function getName()
+    private $find;
+    public function getFind()
     {
-        return $this->name;
+        return $this->find;
     }
-
-    public function setName($name)
+    public function setFind($find)
     {
-        $this->name = $name;
-        return $this;
+        $this->find = $find;
     }
-
-    public function getAge()
-    {
-        return $this->age;
-    }
-
-    public function setAge($age)
-    {
-        $this->age = $age;
-        return $this;
-    }
-
-    public function getEmail()
-    {
-        return $this->email;
-    }
-
-    public function setEmail($email)
-    {
-        $this->email = $email;
-        return $this;
-    }
-
-    public function getSession()
-    {
-        return $this->session;
-    }
-
-    public function setSession($session)
-    {
-        $this->session = $session;
-        return $this;
-    }
-
 }
-
