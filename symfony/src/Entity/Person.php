@@ -3,10 +3,12 @@
 namespace App\Entity;
 
 use App\Repository\PersonRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-
+use Symfony\Component\Validator\Constraints as Assert;
 /**
- * @ORM\Entity(repositoryClass=PersonRepository::class)
+ * @ORM\Entity(repositoryClass="App\Repository\PersonRepository")
  */
 class Person
 {
@@ -19,18 +21,33 @@ class Person
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(message="名前を入力してください")
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\Email(message="正しいメールアドレスを入力してください")
+     * @Assert\NotBlank(message="メールアドレスを入力してください")
      */
     private $email;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Assert\Type(type="integer",message="整数を入力してください")
+     * @Assert\NotBlank(message="年齢を入力してください")
      */
     private $age;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="person")
+     */
+    private $messages;
+
+    public function __construct()
+    {
+        $this->messages = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -69,6 +86,36 @@ class Person
     public function setAge(?int $age): self
     {
         $this->age = $age;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Message[]
+     */
+    public function getMessages(): Collection
+    {
+        return $this->messages;
+    }
+
+    public function addMessage(Message $message): self
+    {
+        if (!$this->messages->contains($message)) {
+            $this->messages[] = $message;
+            $message->setPerson($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessage(Message $message): self
+    {
+        if ($this->messages->removeElement($message)) {
+            // set the owning side to null (unless already changed)
+            if ($message->getPerson() === $this) {
+                $message->setPerson(null);
+            }
+        }
 
         return $this;
     }

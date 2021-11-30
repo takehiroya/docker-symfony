@@ -5,9 +5,16 @@
 
 {% block body %}
 <h2>Find Entity</h2>
+{{ form_start(form) }}
+{{ form_widget(form) }}
+{{ form_end(form) }}
 <hr>
+
 {% if data != null %}
-{{data.id}},{{data.name}},{{data.email}},{{data.age}}
-<br>
+<ul>
+{% for item in data %}
+<li>{{item.name}}{{item.age}}</li>
+{% endfor %}
+</ul>
 {% endif %}
 {% endblock %}
