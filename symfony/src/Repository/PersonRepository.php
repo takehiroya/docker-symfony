@@ -19,6 +19,54 @@ class PersonRepository extends ServiceEntityRepository
         parent::__construct($registry, Person::class);
     }
 
+    public function findByName($value)
+    {
+        $builder = $this->createQueryBuilder('p');
+        return $builder
+            ->where($builder->expr()->gte('p.name', '?1'))
+            ->setParameter(1, $value)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByAge($value)
+    {
+        $arr = explode(',', $value);
+        $builder = $this->createQueryBuilder('p');
+        return $builder
+            ->where($builder->expr()->gte('p.age', '?1'))
+            ->andWhere($builder->expr()->lte('p.age', '?2'))
+            ->setParameters(array(1 => $arr[0], 2 => $arr[1]))
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByNameOrEmail($value)
+    {
+        $builder = $this->createQueryBuilder('p');
+        return $builder
+            ->where($builder->expr()->like('p.name', '?1'))
+            ->orWhere($builder->expr()->like('p.email', '?2'))
+            ->setParameters(
+                array(
+                    1 => '%'. $value . '%',
+                    2 => '%'. $value . '%'
+                )
+            )
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findAllWithSort()
+    {
+        return $this->createQueryBuilder('p')
+            ->orderBy('p.age', 'DESC')
+            ->setFirstResult(0)
+            ->setMaxResults(2)
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return Person[] Returns an array of Person objects
     //  */

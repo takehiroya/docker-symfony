@@ -1,10 +1,9 @@
 docker-symfony
 ==============
 
-[![Build Status](https://secure.travis-ci.org/eko/docker-symfony.png?branch=master)](http://travis-ci.org/eko/docker-symfony)
+学習用
+dockerでsymfonyの環境を構築
 
-
-This is a complete stack for running Symfony 5 (latest version), PHP8 and ELK stack using docker-compose tool.
 
 # Installation
 
