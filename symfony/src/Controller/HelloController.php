@@ -18,9 +18,36 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
 class HelloController extends AbstractController
 {
+    /**
+     * @Route("/hello", name="hello")
+     */
+    public function index(Request $request)
+    {
+        $fileSystem = new Filesystem();
+        $temp = __DIR__. '/temp';
+        try {
+            if(!$fileSystem->exists($temp)){
+                $fileSystem->mkdir($temp);
+            }
+            $fileSystem->appendToFile($temp. '/temp.txt', "WRITE TEXT!!");
+            $fileSystem->appendToFile($temp. '/temp.txt', date("Y-m-d H:i:s"));
+            $fileSystem->appendToFile($temp. '/temp.txt', "\n");
+        } catch(IOExceptionInterface $e){
+            echo "ERROR!". $e->getPath();
+        }
+
+        return $this->render('hello/index.html.twig', [
+            'title' => 'Hello',
+            'message' => 'get file/folder',
+        ]);
+    }
+
     /**
      * @Route("/create", name="create")
      */
@@ -107,19 +134,6 @@ class HelloController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/hello", name="hello")
-     */
-    public function index(Request $request, LoggerInterface $logger)
-    {
-        $repository = $this->getDoctrine()
-            ->getRepository(Person::class);
-            $data = $repository->findall();
-        return $this->render('hello/index.html.twig', [
-            'title' => 'Hello',
-            'data' => $data,
-        ]);
-    }
     /**
      * @Route("/find", name="find")
      */
